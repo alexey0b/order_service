@@ -36,7 +36,21 @@ make postgres-start
 make postgres-create-user NAME=username PASSWORD=password
 ```
 
-5. **Выдайте права на созданную БД:**
+5. **Примените миграции:**
+
+- Установите пакет Goose
+
+```bash
+make install-goose
+```
+
+- Мигрируйте таблицы в БД
+
+```bash
+make migrate-up
+```
+
+6. **Выдайте права на созданную БД:**
 
 ```bash
 make postgres-grant-permissions NAME=username
@@ -55,20 +69,6 @@ postgres:
   user: "user"
   password: "password"
   ssl_mode: "disable"
-```
-
-6. **Примените миграции:**
-
-- Установите пакет Goose
-
-```bash
-make install-goose
-```
-
-- Мигрируйте таблицы в БД
-
-```bash
-make migrate-up
 ```
 
 7. **Запустите брокер Kafka:**
