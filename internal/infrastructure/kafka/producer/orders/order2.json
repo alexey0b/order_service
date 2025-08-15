@@ -1,0 +1,62 @@
+{
+  "order_uid": "c674geh8c3c95c7test",
+  "track_number": "WBILMTESTTRACK2",
+  "entry": "WBIL",
+  "delivery": {
+    "name": "John Smith",
+    "phone": "+1234567890",
+    "zip": "10001",
+    "city": "New York",
+    "address": "Broadway 456",
+    "region": "NY",
+    "email": "john.smith@example.com"
+  },
+  "payment": {
+    "transaction": "c674geh8c3c95c7test",
+    "request_id": "req_12345",
+    "currency": "USD",
+    "provider": "stripe",
+    "amount": 2450,
+    "payment_dt": 1637907800,
+    "bank": "chase",
+    "delivery_cost": 1200,
+    "goods_total": 1250,
+    "custom_fee": 0
+  },
+  "items": [
+    {
+      "chrt_id": 9934940,
+      "track_number": "WBILMTESTTRACK2",
+      "price": 750,
+      "rid": "cd5329198b875bf1ctest",
+      "name": "Smartphone Case",
+      "sale": 20,
+      "size": "M",
+      "total_price": 600,
+      "nm_id": 2389220,
+      "brand": "TechGuard",
+      "status": 202
+    },
+    {
+      "chrt_id": 9934941,
+      "track_number": "WBILMTESTTRACK2",
+      "price": 850,
+      "rid": "cd5329298b875bf2ctest",
+      "name": "Wireless Headphones",
+      "sale": 25,
+      "size": "0",
+      "total_price": 650,
+      "nm_id": 2389221,
+      "brand": "SoundMax",
+      "status": 202
+    }
+  ],
+  "locale": "en",
+  "internal_signature": "internal_sig_2",
+  "customer_id": "customer_456",
+  "delivery_service": "fedex",
+  "shardkey": "8",
+  "sm_id": 88,
+  "date_created": "2021-11-26T08:15:30Z",
+  "oof_shard": "2"
+}

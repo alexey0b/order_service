@@ -1,0 +1,75 @@
+{
+  "order_uid": "e896klm0e5e17e9test",
+  "track_number": "WBILMTESTTRACK4",
+  "entry": "WBIL",
+  "delivery": {
+    "name": "Hiroshi Tanaka",
+    "phone": "+81901234567",
+    "zip": "100-0001",
+    "city": "Tokyo",
+    "address": "Shibuya 1-2-3",
+    "region": "Tokyo",
+    "email": "hiroshi.tanaka@email.jp"
+  },
+  "payment": {
+    "transaction": "e896klm0e5e17e9test",
+    "request_id": "",
+    "currency": "JPY",
+    "provider": "rakuten",
+    "amount": 15800,
+    "payment_dt": 1637908200,
+    "bank": "mizuho",
+    "delivery_cost": 800,
+    "goods_total": 15000,
+    "custom_fee": 100
+  },
+  "items": [
+    {
+      "chrt_id": 9934960,
+      "track_number": "WBILMTESTTRACK4",
+      "price": 8000,
+      "rid": "fg7541310d097dh6etest",
+      "name": "Anime Figure",
+      "sale": 0,
+      "size": "0",
+      "total_price": 8000,
+      "nm_id": 2389240,
+      "brand": "Kotobukiya",
+      "status": 202
+    },
+    {
+      "chrt_id": 9934961,
+      "track_number": "WBILMTESTTRACK4",
+      "price": 4500,
+      "rid": "fg7541410d097dh7etest",
+      "name": "Manga Set",
+      "sale": 10,
+      "size": "0",
+      "total_price": 4050,
+      "nm_id": 2389241,
+      "brand": "Shueisha",
+      "status": 202
+    },
+    {
+      "chrt_id": 9934962,
+      "track_number": "WBILMTESTTRACK4",
+      "price": 3500,
+      "rid": "fg7541510d097dh8etest",
+      "name": "Japanese Tea Set",
+      "sale": 5,
+      "size": "0",
+      "total_price": 3325,
+      "nm_id": 2389242,
+      "brand": "Yamakiikai",
+      "status": 202
+    }
+  ],
+  "locale": "ja",
+  "internal_signature": "internal_sig_4",
+  "customer_id": "customer_101",
+  "delivery_service": "yamato",
+  "shardkey": "6",
+  "sm_id": 66,
+  "date_created": "2021-11-26T11:20:45Z",
+  "oof_shard": "4"
+}

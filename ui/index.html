@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Service</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Order Service</h1>
+
+      <!-- Get Order Info -->
+      <div class="form-group">
+        <h3>Get Order Info</h3>
+        <input id="get-order-info" type="string" placeholder="uid" />
+        <button onclick="getOrder()">Get</button>
+      </div>
+
+      <!-- Order Info -->
+      <div class="table-container" id="order-table-container" style="display: none">
+        <h3>Информация о заказе</h3>
+        <table>
+          <tbody id="order-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Delivery Info -->
+      <div class="table-container" id="delivery-table-container" style="display: none">
+        <h3>Информация о доставке</h3>
+        <table>
+          <tbody id="delivery-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Payment Info -->
+      <div class="table-container" id="payment-table-container" style="display: none">
+        <h3>Информация об оплате</h3>
+        <table>
+          <tbody id="payment-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Items Info -->
+      <div class="table-container" id="items-table-container" style="display: none">
+        <h3>Товары</h3>
+        <table>
+          <tbody id="items-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      function getOrder() {
+        const orderUid = document.getElementById("get-order-info").value;
+
+        if (!orderUid) {
+          alert("Введите UID заказа");
+          return;
+        }
+
+        fetch(`/api/v1/order/${orderUid}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const order = data.order;
+            
+            // Order table
+            const orderTable = document.getElementById("order-table-body");
+            orderTable.innerHTML = `
+              <tr><td><strong>Order UID:</strong></td><td>${order.order_uid}</td></tr>
+              <tr><td><strong>Track Number:</strong></td><td>${order.track_number}</td></tr>
+              <tr><td><strong>Entry:</strong></td><td>${order.entry}</td></tr>
+              <tr><td><strong>Locale:</strong></td><td>${order.locale}</td></tr>
+              <tr><td><strong>Internal Signature:</strong></td><td>${order.internal_signature}</td></tr>
+              <tr><td><strong>Customer ID:</strong></td><td>${order.customer_id}</td></tr>
+              <tr><td><strong>Delivery Service:</strong></td><td>${order.delivery_service}</td></tr>
+              <tr><td><strong>Shard Key:</strong></td><td>${order.shardkey}</td></tr>
+              <tr><td><strong>SM ID:</strong></td><td>${order.sm_id}</td></tr>
+              <tr><td><strong>Date Created:</strong></td><td>${order.date_created}</td></tr>
+              <tr><td><strong>Oof Shard:</strong></td><td>${order.oof_shard}</td></tr>
+            `;
+            
+            // Delivery table
+            const deliveryTable = document.getElementById("delivery-table-body");
+            deliveryTable.innerHTML = `
+              <tr><td><strong>Name:</strong></td><td>${order.delivery.name}</td></tr>
+              <tr><td><strong>Phone:</strong></td><td>${order.delivery.phone}</td></tr>
+              <tr><td><strong>ZIP:</strong></td><td>${order.delivery.zip}</td></tr>
+              <tr><td><strong>City:</strong></td><td>${order.delivery.city}</td></tr>
+              <tr><td><strong>Address:</strong></td><td>${order.delivery.address}</td></tr>
+              <tr><td><strong>Region:</strong></td><td>${order.delivery.region}</td></tr>
+              <tr><td><strong>Email:</strong></td><td>${order.delivery.email}</td></tr>
+            `;
+            
+            // Payment table
+            const paymentTable = document.getElementById("payment-table-body");
+            paymentTable.innerHTML = `
+              <tr><td><strong>Transaction:</strong></td><td>${order.payment.transaction}</td></tr>
+              <tr><td><strong>Request ID:</strong></td><td>${order.payment.request_id}</td></tr>
+              <tr><td><strong>Currency:</strong></td><td>${order.payment.currency}</td></tr>
+              <tr><td><strong>Provider:</strong></td><td>${order.payment.provider}</td></tr>
+              <tr><td><strong>Amount:</strong></td><td>${order.payment.amount}</td></tr>
+              <tr><td><strong>Payment Date:</strong></td><td>${new Date(order.payment.payment_dt * 1000).toLocaleString()}</td></tr>
+              <tr><td><strong>Bank:</strong></td><td>${order.payment.bank}</td></tr>
+              <tr><td><strong>Delivery Cost:</strong></td><td>${order.payment.delivery_cost}</td></tr>
+              <tr><td><strong>Goods Total:</strong></td><td>${order.payment.goods_total}</td></tr>
+              <tr><td><strong>Custom Fee:</strong></td><td>${order.payment.custom_fee}</td></tr>
+            `;
+            
+            // Items table
+            const itemsTable = document.getElementById("items-table-body");
+            itemsTable.innerHTML = order.items.map(item => `
+              <tr><td><strong>Chart ID:</strong></td><td>${item.chrt_id}</td></tr>
+              <tr><td><strong>Track Number:</strong></td><td>${item.track_number}</td></tr>
+              <tr><td><strong>Price:</strong></td><td>${item.price}</td></tr>
+              <tr><td><strong>RID:</strong></td><td>${item.rid}</td></tr>
+              <tr><td><strong>Name:</strong></td><td>${item.name}</td></tr>
+              <tr><td><strong>Sale:</strong></td><td>${item.sale}%</td></tr>
+              <tr><td><strong>Size:</strong></td><td>${item.size}</td></tr>
+              <tr><td><strong>Total Price:</strong></td><td>${item.total_price}</td></tr>
+              <tr><td><strong>NM ID:</strong></td><td>${item.nm_id}</td></tr>
+              <tr><td><strong>Brand:</strong></td><td>${item.brand}</td></tr>
+              <tr><td><strong>Status:</strong></td><td>${item.status}</td></tr>
+              <tr><td colspan="2"><hr></td></tr>
+            `).join('');
+            
+            // Show all tables
+            document.getElementById("order-table-container").style.display = "block";
+            document.getElementById("delivery-table-container").style.display = "block";
+            document.getElementById("payment-table-container").style.display = "block";
+            document.getElementById("items-table-container").style.display = "block";
+          })
+          .catch((error) => {
+            console.error("Ошибка при получении заказа:", error);
+            alert(`Ошибка: ${error.message}`);
+          });
+      }
+    </script>
+  </body>
+</html>

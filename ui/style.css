@@ -1,0 +1,59 @@
+body {
+  font-family: Arial, sans-serif;
+}
+.container {
+  width: 600px;
+  margin: 0 auto;
+}
+.form-group {
+  margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#get-order-info,
+button {
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+#get-order-info {
+  flex: 1;
+}
+
+button {
+  width: 80px;
+}
+
+.table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  border: 1px solid black;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background-color: #f2f2f2;
+}
+
+.styled-select {
+  padding: 10px;
+  font-size: 14px;
+  width: 100%;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+}
