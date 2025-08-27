@@ -10,6 +10,7 @@ import (
 	"order_service/config"
 	"order_service/internal/delivery/rest"
 	"order_service/internal/domain"
+	"order_service/internal/infrastructure/monitoring"
 	"order_service/internal/logger"
 	"order_service/internal/mock"
 	"testing"
@@ -144,7 +145,10 @@ func TestGetOrder(t *testing.T) {
 					Return(testCase.outputOrderData, testCase.outputErr)
 			}
 
-			handler := rest.NewHandler(mockOrderService)
+			httpMetrics, err := monitoring.NewPrometheusMetrics()
+			require.NoError(t, err)
+
+			handler := rest.NewHandler(mockOrderService, httpMetrics) // вместо httpMetrics добавить его мок
 			mux := http.NewServeMux()
 			mux.HandleFunc(pattern, handler.GetOrders())
 

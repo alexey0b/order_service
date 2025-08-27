@@ -8,6 +8,7 @@ import (
 	"order_service/internal/domain"
 	"order_service/internal/infrastructure/cache"
 	"order_service/internal/infrastructure/kafka/consumer"
+	"order_service/internal/infrastructure/monitoring"
 	"order_service/internal/logger"
 	"order_service/internal/request/repositoriy/postgres"
 	"order_service/internal/usecase"
@@ -18,6 +19,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -40,11 +42,16 @@ func main() {
 	cache := cache.NewLRUCache(cfg)
 	repo := postgres.NewRequestRepositoryPostgres(db)
 	service := usecase.NewOrderRequestService(cache, repo)
-	handler := rest.NewHandler(service)
+	httpMetrics, err := monitoring.NewPrometheusMetrics()
+	if err != nil {
+		logger.ErrorLogger.Fatalln("Error monitoring:", err)
+	}
+	handler := rest.NewHandler(service, httpMetrics)
 	consumer := consumer.NewConsumer(cfg)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir("ui")))
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("GET /api/v1/order/{order_uid}", handler.GetOrders())
 
 	serv := &http.Server{
@@ -98,7 +105,7 @@ func main() {
 
 		logger.InfoLogger.Println("Order Service is stopping...")
 
-		timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Duration(cfg.Serv.ShutdowTimeout)*time.Second)
+		timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Duration(cfg.Serv.ShutdownTimeout)*time.Second)
 		defer timeoutCtxCancel()
 
 		if err := serv.Shutdown(timeoutCtx); err != nil {

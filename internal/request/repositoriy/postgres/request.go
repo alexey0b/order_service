@@ -55,14 +55,6 @@ const (
 	`
 
 	// Запросы на получение строк
-	getRowFromOrders = `
-	SELECT
-		order_uid, track_number, entry, locale, internal_signature,
-		customer_id, delivery_service, shardkey, sm_id, date_created, oof_shard
-	FROM orders
-	WHERE order_uid = $1
-	`
-
 	getActualRowsFromOrders = `
 	SELECT order_uid
 	FROM orders
@@ -70,105 +62,97 @@ const (
 	LIMIT $1
 	`
 
-	getRowFromDelivery = `
-	SELECT
-		name, phone, zip, city, address, region, email
-	FROM delivery
-	WHERE order_uid = $1
+	getRowFromOrdersDeliveryAndPayment = `
+	SELECT 
+		o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature,
+		o.customer_id, o.delivery_service, o.shardkey, o.sm_id, 
+		o.date_created, o.oof_shard,
+		d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
+		p.transaction, p.request_id, p.currency, p.provider, p.amount,
+		p.payment_dt, p.bank, p.delivery_cost, p.goods_total, p.custom_fee
+	FROM orders o
+		JOIN delivery d ON o.order_uid = d.order_uid
+		JOIN payment p ON o.order_uid = p.order_uid
+	WHERE o.order_uid = $1
 	`
 
-	getRowFromPayment = `
-	SELECT
-		transaction, request_id, currency, provider, amount,
-		payment_dt, bank, delivery_cost, goods_total, custom_fee
-	FROM payment
-	WHERE order_uid = $1
+	getRowsFromOrdersDeliveryAndPayment = `
+	SELECT 
+		o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature,
+		o.customer_id, o.delivery_service, o.shardkey, o.sm_id, 
+		o.date_created, o.oof_shard,
+		d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
+		p.transaction, p.request_id, p.currency, p.provider, p.amount,
+		p.payment_dt, p.bank, p.delivery_cost, p.goods_total, p.custom_fee
+	FROM orders o
+		JOIN delivery d ON o.order_uid = d.order_uid
+		JOIN payment p ON o.order_uid = p.order_uid
+	WHERE o.order_uid = ANY($1::text[])
 	`
 
-	getRowsFromItems = `
+	getRowsFromItemsByOrderUID = `
 	SELECT
-		chrt_id, track_number, price, rid,
+		order_uid, chrt_id, track_number, price, rid,
 		name, sale, size, total_price, nm_id, brand, status
 	FROM items
 	WHERE order_uid = $1
 	`
+
+	getRowsFromItemsByOrderUIDs = `
+	SELECT
+		order_uid, chrt_id, track_number, price, rid,
+		name, sale, size, total_price, nm_id, brand, status
+	FROM items
+	WHERE order_uid = ANY($1::text[])
+	`
 )
 
-// GetOrder получает всю информацию о заказе
+// GetOrder получает всю информацию о заказе.
 func (r *RequestRepositoryPostgres) GetOrder(ctx context.Context, orderUID string) (*domain.Order, error) {
-	order := domain.Order{}
-	// Получаем строку из orders
-	err := r.db.GetContext(ctx, &order, getRowFromOrders, orderUID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrOrderNotFound
-		} else {
-			return nil, fmt.Errorf("failed to select order's row: %w", err)
-		}
+	// Получаем строку из orders delivery и payment
+	orderData := domain.OrderWithoutItems{}
+	if err := r.db.GetContext(ctx, &orderData, getRowFromOrdersDeliveryAndPayment, orderUID); err != nil {
+		return nil, fmt.Errorf("failed to select order row: %w", err)
 	}
 
-	// Получаем строку из delivery
-	err = r.db.GetContext(ctx, &order.Delivery, getRowFromDelivery, orderUID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrOrderNotFound
-		} else {
-			return nil, fmt.Errorf("failed to select delivery's row: %w", err)
-		}
+	itemsData := []domain.Item{}
+	if err := r.db.SelectContext(ctx, &itemsData, getRowsFromItemsByOrderUID, orderUID); err != nil {
+		return nil, fmt.Errorf("failed to select items rows: %w", err)
 	}
 
-	// Получаем строку из payment
-	err = r.db.GetContext(ctx, &order.Payment, getRowFromPayment, orderUID)
+	order, err := assembleOrder(orderUID, &orderData, itemsData)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrOrderNotFound
-		} else {
-			return nil, fmt.Errorf("failed to select payment's row: %w", err)
-		}
+		return nil, fmt.Errorf("failed to assemble order: %w", err)
 	}
 
-	// Получаем строки из items
-	err = r.db.SelectContext(ctx, &order.Items, getRowsFromItems, orderUID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrOrderNotFound
-		} else {
-			return nil, fmt.Errorf("failed to select items's rows: %w", err)
-		}
-	}
-
-	return &order, nil
+	return order, nil
 }
 
-// GetOrders получает список заказов с ограничением по количеству (сортировка по дате создания DESC)
+// GetOrders получает список заказов с ограничением по количеству (сортировка по дате создания DESC).
 func (r *RequestRepositoryPostgres) GetOrders(ctx context.Context, quantity int) ([]*domain.Order, error) {
 	orderUIDs := []string{}
-	orders := []*domain.Order{}
 
-	// Получаем строки из orders
-	err := r.db.SelectContext(ctx, &orderUIDs, getActualRowsFromOrders, quantity)
-	if err != nil {
+	if err := r.db.SelectContext(ctx, &orderUIDs, getActualRowsFromOrders, quantity); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrOrdersNotFound
 		} else {
-			return nil, fmt.Errorf("failed to select orders's rows: %w", err)
+			return nil, fmt.Errorf("failed to select orders rows: %w", err)
 		}
 	}
 
-	for _, orderUID := range orderUIDs {
-		order, err := r.GetOrder(ctx, orderUID)
-		if err != nil {
-			if !errors.Is(err, sql.ErrNoRows) {
-				return nil, fmt.Errorf("failed to get orders: %w", err)
-			} else {
-				continue
-			}
-		}
-		orders = append(orders, order)
+	ordersData := []*domain.OrderWithoutItems{}
+	if err := r.db.SelectContext(ctx, &ordersData, getRowsFromOrdersDeliveryAndPayment, orderUIDs); err != nil {
+		return nil, fmt.Errorf("failed to select orders rows: %w", err)
 	}
 
-	if len(orders) == 0 {
-		return nil, domain.ErrOrdersNotFound
+	itemsData := []domain.Item{}
+	if err := r.db.SelectContext(ctx, &itemsData, getRowsFromItemsByOrderUIDs, orderUIDs); err != nil {
+		return nil, fmt.Errorf("failed to select items rows: %w", err)
+	}
+
+	orders, err := assembleOrders(orderUIDs, ordersData, itemsData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assemble orders: %w", err)
 	}
 
 	return orders, nil
@@ -226,4 +210,119 @@ func (r *RequestRepositoryPostgres) SaveOrder(ctx context.Context, order *domain
 	}
 
 	return nil
+}
+
+// assembleOrder собирает заказ из структур *domain.OrderWithoutItems и []domain.Item в domain.Order
+func assembleOrder(orderUID string, orderData *domain.OrderWithoutItems, itemsData []domain.Item) (*domain.Order, error) {
+	for _, item := range itemsData {
+		if item.OrderUID != orderUID {
+			return nil, fmt.Errorf("mismatch orderUID with the orderUID in ordersData")
+		}
+	}
+
+	order := &domain.Order{
+		OrderUID:          orderData.OrderUID,
+		TrackNumber:       orderData.TrackNumber,
+		Entry:             orderData.Entry,
+		Locale:            orderData.Locale,
+		InternalSignature: orderData.InternalSignature,
+		CustomerID:        orderData.CustomerID,
+		DeliveryService:   orderData.DeliveryService,
+		ShardKey:          orderData.ShardKey,
+		SmID:              orderData.SmID,
+		DateCreated:       orderData.DateCreated,
+		OofShard:          orderData.OofShard,
+
+		Delivery: domain.Delivery{
+			Name:    orderData.Name,
+			Phone:   orderData.Phone,
+			Zip:     orderData.Zip,
+			City:    orderData.City,
+			Address: orderData.Address,
+			Region:  orderData.Region,
+			Email:   orderData.Email,
+		},
+
+		Payment: domain.Payment{
+			Transaction:  orderData.Transaction,
+			RequestID:    orderData.RequestID,
+			Currency:     orderData.Currency,
+			Provider:     orderData.Provider,
+			Amount:       orderData.Amount,
+			PaymentDt:    orderData.PaymentDt,
+			Bank:         orderData.Bank,
+			DeliveryCost: orderData.DeliveryCost,
+			GoodsTotal:   orderData.GoodsTotal,
+			CustomFee:    orderData.CustomFee,
+		},
+
+		Items: itemsData,
+	}
+
+	return order, nil
+}
+
+// assembleOrders собирает заказы из структур []*domain.OrderWithoutItems и []domain.Item в []*domain.Order
+func assembleOrders(orderUIDs []string, ordersData []*domain.OrderWithoutItems, itemsData []domain.Item) ([]*domain.Order, error) {
+	orderMap := make(map[string]*domain.Order)
+
+	// Заполняем основные данные заказов
+	for _, orderData := range ordersData {
+		orderMap[orderData.OrderUID] = &domain.Order{
+			OrderUID:          orderData.OrderUID,
+			TrackNumber:       orderData.TrackNumber,
+			Entry:             orderData.Entry,
+			Locale:            orderData.Locale,
+			InternalSignature: orderData.InternalSignature,
+			CustomerID:        orderData.CustomerID,
+			DeliveryService:   orderData.DeliveryService,
+			ShardKey:          orderData.ShardKey,
+			SmID:              orderData.SmID,
+			DateCreated:       orderData.DateCreated,
+			OofShard:          orderData.OofShard,
+
+			Delivery: domain.Delivery{
+				Name:    orderData.Name,
+				Phone:   orderData.Phone,
+				Zip:     orderData.Zip,
+				City:    orderData.City,
+				Address: orderData.Address,
+				Region:  orderData.Region,
+				Email:   orderData.Email,
+			},
+
+			Payment: domain.Payment{
+				Transaction:  orderData.Transaction,
+				RequestID:    orderData.RequestID,
+				Currency:     orderData.Currency,
+				Provider:     orderData.Provider,
+				Amount:       orderData.Amount,
+				PaymentDt:    orderData.PaymentDt,
+				Bank:         orderData.Bank,
+				DeliveryCost: orderData.DeliveryCost,
+				GoodsTotal:   orderData.GoodsTotal,
+				CustomFee:    orderData.CustomFee,
+			},
+
+			Items: make([]domain.Item, 0),
+		}
+	}
+
+	// Добавляем items к соответствующим заказам
+	for _, item := range itemsData {
+		if order, exists := orderMap[item.OrderUID]; exists {
+			order.Items = append(order.Items, item)
+		}
+	}
+
+	fullOrders := make([]*domain.Order, len(orderUIDs))
+	for i, uid := range orderUIDs {
+		if order, exists := orderMap[uid]; exists {
+			fullOrders[i] = order
+		} else {
+			return nil, fmt.Errorf("mismatch of orderUIDs array with the orderUID in ordersData")
+		}
+	}
+
+	return fullOrders, nil
 }

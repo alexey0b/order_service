@@ -4,8 +4,10 @@ import "errors"
 
 var (
 	// Repository errors
-	ErrOrderNotFound  = errors.New("order not found")
-	ErrOrdersNotFound = errors.New("orders not found")
+	ErrOrderNotFound   = errors.New("order not found")
+	ErrOrdersNotFound  = errors.New("orders not found")
+
+	// http errors
 	ErrInternalServer = errors.New("internal server error")
 
 	// Validation errors - business rules

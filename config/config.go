@@ -9,13 +9,13 @@ import (
 const cfgPath = "./config"
 
 type Server struct {
-	Host           string `mapstructure:"host"`
-	Port           int    `mapstructure:"port"`
-	ShutdowTimeout int    `mapstructure:"shutdown_timeout"`
-	ReadTimeout    int    `mapstructure:"read_timeout"`
-	WriteTimeout   int    `mapstructure:"write_timeout"`
-	IdleTimeout    int    `mapstructure:"idle_timeout"`
-	Debug          bool   `mapstructure:"debug"`
+	Host            string `mapstructure:"host"`
+	Port            int    `mapstructure:"port"`
+	ShutdownTimeout int    `mapstructure:"shutdown_timeout"`
+	ReadTimeout     int    `mapstructure:"read_timeout"`
+	WriteTimeout    int    `mapstructure:"write_timeout"`
+	IdleTimeout     int    `mapstructure:"idle_timeout"`
+	Debug           bool   `mapstructure:"debug"`
 }
 
 type Postgres struct {
