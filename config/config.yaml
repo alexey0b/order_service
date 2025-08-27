@@ -2,7 +2,7 @@
 server:
   host: "app" 
   port: 8080 
-  shutdow_timeout: 30 # in second
+  shutdown_timeout: 30 # in second
   read_timeout: 5 # in second
   write_timeout: 10 # in second
   idle_timeout: 120 # in second

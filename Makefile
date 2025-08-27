@@ -38,6 +38,12 @@ postgres-start:
 postgres-stop:
 	@docker compose stop postgres
 
+promo-start:
+	@docker compose up -d prometheus
+
+promo-stop:
+	@docker compose down prometheus
+
 service-start:
 	@docker compose up -d
 
@@ -126,6 +132,8 @@ help:
 	@echo "  postgres-stop                - Stop postgres container"
 	@echo "  broker-start                 - Start broker container"
 	@echo "  broker-stop                  - Stop broker container"
+	@echo "  promo-start                  - Start prometheus container"
+	@echo "  promo-stop                   - Stop prometheus container"
 	@echo ""
 	@echo "For Goose migration:"
 	@echo "  install-goose                - Install goose migration tool"

@@ -119,6 +119,27 @@ curl http://localhost:8080/api/v1/order/b563feb7b2b84b6test
 
 ---
 
+## 📊 Мониторинг и метрики
+
+- **Запустите Prometheus через docker compose**:
+
+```bash
+make promo-start
+```
+
+### Prometheus метрики
+
+Сервис предоставляет метрики для мониторинга через Prometheus:
+
+- **Эндпоинт метрик**: [http://localhost:8080/metrics](http://localhost:8080/metrics)
+- **Prometheus UI**: [http://localhost:9090](http://localhost:9090)
+
+**Доступные метрики:**
+- `app_requests_total` - общее количество запросов
+- `app_request_duration_seconds` - время обработки запросов
+
+---
+
 ## 🛠️ Технические ресурсы
 
 - **Язык программирования**: Go (Golang)
@@ -131,12 +152,15 @@ curl http://localhost:8080/api/v1/order/b563feb7b2b84b6test
 - **[hashicorp/golang-lru](https://github.com/hashicorp/golang-lru)** - LRU кеш
 - **[pressly/goose](https://github.com/pressly/goose)** - миграции БД
 - **[spf13/viper](https://github.com/spf13/viper)** - конфигурация
+- **[prometheus/client_golang](https://github.com/prometheus/client_golang)** - метрики Prometheus
 
 ### Библиотеки для тестирования
 
 - **[stretchr/testify](https://github.com/stretchr/testify)** - assertions
 - **[uber-go/mock](https://github.com/uber-go/mock)** - моки
 - **[testcontainers-go](https://github.com/testcontainers/testcontainers-go)** - интеграционные тесты
+
+---
 
 ## 📚 Полезные команды
 

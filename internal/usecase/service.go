@@ -13,7 +13,7 @@ type OrderRequestService struct {
 	repo  domain.OrderRepository
 }
 
-// NewOrderRequestService создает новый сервис заказов с внедренными зависимостями кеша и репозитория
+// NewOrderRequestService создает новый сервис заказов с внедренными зависимостями кеша и репозитория.
 func NewOrderRequestService(cache domain.OrderCache, repo domain.OrderRepository) *OrderRequestService {
 	logger.Debug("Initializing OrderRequestService")
 	return &OrderRequestService{
@@ -22,7 +22,7 @@ func NewOrderRequestService(cache domain.OrderCache, repo domain.OrderRepository
 	}
 }
 
-// GetOrder получает заказ по order_uid с использованием cache
+// GetOrder получает заказ по order_uid с использованием cache.
 func (s *OrderRequestService) GetOrder(ctx context.Context, orderUID string) (*domain.Order, error) {
 	var (
 		order *domain.Order
@@ -49,7 +49,7 @@ func (s *OrderRequestService) GetOrder(ctx context.Context, orderUID string) (*d
 	return order, nil
 }
 
-// SaveOrder сохраняет заказ в кеш и репозиторий
+// SaveOrder сохраняет заказ в кеш и репозиторий.
 func (s *OrderRequestService) SaveOrder(ctx context.Context, order *domain.Order) error {
 	if ctx.Err() != nil {
 		return fmt.Errorf("saving order cancelled: %w", ctx.Err())
@@ -66,7 +66,7 @@ func (s *OrderRequestService) SaveOrder(ctx context.Context, order *domain.Order
 	return nil
 }
 
-// RestoreCache восстанавливает кеш из БД при запуске приложения
+// RestoreCache восстанавливает кеш из БД при запуске приложения.
 func (s *OrderRequestService) RestoreCache(ctx context.Context, cfg *config.Config) error {
 	logger.InfoLogger.Println("Restoring cache...")
 

@@ -6,23 +6,30 @@ import (
 	"net/http"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
+	"time"
 )
 
 type Handler struct {
-	service domain.OrderService
+	service     domain.OrderService
+	httpMetrics domain.HTTPMetrics
 }
 
-// NewHandler создает новый HTTP обработчик с внедренным сервисом заказов
-func NewHandler(service domain.OrderService) *Handler {
+// NewHandler создает новый HTTP обработчик с внедренным сервисом заказов.
+func NewHandler(service domain.OrderService, httpMetrics domain.HTTPMetrics) *Handler {
 	logger.DebugLogger.Println("Initializing Handler")
 	return &Handler{
-		service: service,
+		service:     service,
+		httpMetrics: httpMetrics,
 	}
 }
 
-// GetOrders возвращает HTTP обработчик для получения заказа по order_uid
+// GetOrders возвращает HTTP обработчик для получения заказа по order_uid.
 func (h *Handler) GetOrders() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		defer h.httpMetrics.ObserveRequest(start)
+		h.httpMetrics.IncRequest()
+
 		ctx := r.Context()
 		orderUID := r.PathValue("order_uid")
 

@@ -12,7 +12,7 @@ type LRUCache struct {
 	cache *expirable.LRU[string, *domain.Order]
 }
 
-// NewLRUCache создает новый LRU кеш с TTL на основе конфигурации
+// NewLRUCache создает новый LRU кеш с TTL на основе конфигурации.
 func NewLRUCache(cfg *config.Config) *LRUCache {
 	var ttl time.Duration
 	if cfg.Serv.Debug {
@@ -24,13 +24,13 @@ func NewLRUCache(cfg *config.Config) *LRUCache {
 	return &LRUCache{cache: cache}
 }
 
-// GetOrder получает заказ из кеша по order_uid
+// GetOrder получает заказ из кеша по order_uid.
 func (c *LRUCache) GetOrder(orderUID string) (*domain.Order, bool) {
 	order, ok := c.cache.Get(orderUID)
 	return order, ok
 }
 
-// SaveOrder сохраняет заказ в кеш
+// SaveOrder сохраняет заказ в кеш.
 func (c *LRUCache) SaveOrder(orderUID string, order *domain.Order) {
 	c.cache.Add(orderUID, order)
 }
