@@ -46,3 +46,12 @@ jobs:
       - name: Run Integration Tests
         run: |
           make integration-test-start
+
+      - name: Run Tests with Coverage
+        run: |
+          go test -v -covermode=atomic -coverprofile=coverage.out ./internal/usecase/... ./internal/delivery/... ./internal/infrastructure/... ./internal/request/repositoriy/...
+
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.6
+        with:
+          file: coverage.out
