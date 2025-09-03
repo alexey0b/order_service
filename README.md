@@ -1,4 +1,5 @@
 [![Order service CI](https://github.com/alexey0b/order_service/actions/workflows/ci.yaml/badge.svg)](https://github.com/alexey0b/order_service/actions/workflows/ci.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/alexey0b/order_service/badge.svg?branch=main)](https://coveralls.io/github/alexey0b/order_service?branch=main)
 
 <h1 align="center">Order Service</h1>
 
