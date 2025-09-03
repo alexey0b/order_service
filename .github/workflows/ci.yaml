@@ -47,7 +47,13 @@ jobs:
         run: |
           make integration-test-start
 
+      - name: Run Tests with Coverage
+        run: |
+          go test -v -covermode=atomic -coverprofile=coverage.out ./...
+
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.out
+
