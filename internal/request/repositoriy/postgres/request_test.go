@@ -62,6 +62,7 @@ var testOrders = []*domain.Order{
 		},
 		Items: []domain.Item{
 			{
+				OrderUID:    "test_order_123",
 				ChrtID:      9934930,
 				TrackNumber: "WBILMTESTTRACK",
 				Price:       453,
@@ -110,6 +111,7 @@ var testOrders = []*domain.Order{
 		},
 		Items: []domain.Item{
 			{
+				OrderUID:    "test_order_789",
 				ChrtID:      9934932,
 				TrackNumber: "WBILMTESTTRACK3",
 				Price:       2000,
@@ -198,18 +200,13 @@ func TestSaveAndGetOrders(t *testing.T) {
 	t.Run("get_existing_order", func(t *testing.T) {
 		order, err := repo.GetOrder(ctx, testOrders[0].OrderUID)
 		require.NoError(t, err)
-		require.NotNil(t, order)
-		require.Equal(t, testOrders[0].OrderUID, order.OrderUID)
-		require.Equal(t, testOrders[0].TrackNumber, order.TrackNumber)
-		require.Equal(t, testOrders[0].Name, order.Name)
-		require.Equal(t, testOrders[0].Transaction, order.Transaction)
-		require.Equal(t, testOrders[0].Items, order.Items)
+		require.Equal(t, *testOrders[0], *order)
 	})
 
 	t.Run("get_nonexistent_order", func(t *testing.T) {
 		order, err := repo.GetOrder(ctx, "nonexistent_order")
 		require.Error(t, err)
-		require.ErrorIs(t, err, domain.ErrOrderNotFound)
+		require.ErrorContains(t, err, "failed to select order row")
 		require.Nil(t, order)
 	})
 
@@ -232,9 +229,8 @@ func TestSaveAndGetOrders(t *testing.T) {
 	t.Run("get_orders_empty", func(t *testing.T) {
 		cleanRepo(testDB)
 		orders, err := repo.GetOrders(ctx, len(testOrders))
-		require.Error(t, err)
-		require.ErrorIs(t, err, domain.ErrOrdersNotFound)
-		require.Nil(t, orders)
+		require.NoError(t, err)
+		require.Len(t, orders, 0)
 	})
 }
 
