@@ -46,3 +46,6 @@ jobs:
       - name: Run Integration Tests
         run: |
           make integration-test-start
+
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.6
