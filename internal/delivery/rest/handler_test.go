@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"testing"
+
 	"order_service/config"
 	"order_service/internal/delivery/rest"
 	"order_service/internal/domain"
-	"order_service/internal/infrastructure/monitoring"
 	"order_service/internal/logger"
 	"order_service/internal/mock"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -84,7 +84,8 @@ var (
 				Brand:       "Vivienne Sabo",
 				Status:      202,
 			},
-		}}
+		},
+	}
 
 	tbl []instance = []instance{
 		// 1. Валидные входные данные и правильный ответ
@@ -145,10 +146,18 @@ func TestGetOrder(t *testing.T) {
 					Return(testCase.outputOrderData, testCase.outputErr)
 			}
 
-			httpMetrics, err := monitoring.NewPrometheusMetrics()
-			require.NoError(t, err)
+			mockHTTPpMetrics := mock.NewMockHTTPMetrics(ctrl)
+			if testCase.inputOrderUID != "" {
+				mockHTTPpMetrics.
+					EXPECT().
+					IncRequest()
 
-			handler := rest.NewHandler(mockOrderService, httpMetrics) // вместо httpMetrics добавить его мок
+				mockHTTPpMetrics.
+					EXPECT().
+					ObserveRequest(gomock.Any())
+			}
+
+			handler := rest.NewHandler(mockOrderService, mockHTTPpMetrics)
 			mux := http.NewServeMux()
 			mux.HandleFunc(pattern, handler.GetOrders())
 

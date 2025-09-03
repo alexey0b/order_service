@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
 	"order_service/internal/request/repositoriy/postgres"
-	"os"
-	"path/filepath"
-	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -161,9 +162,13 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	psqlUrl := fmt.Sprintf("postgres://user:password@%s:%s/test_db?sslmode=disable", host, mappedPort.Port())
+	psqlURL := fmt.Sprintf(
+		"postgres://user:password@%s:%s/test_db?sslmode=disable",
+		host,
+		mappedPort.Port(),
+	)
 
-	testDB, err = sqlx.Connect("pgx", psqlUrl)
+	testDB, err = sqlx.Connect("pgx", psqlURL)
 	if err != nil {
 		log.Fatalln("Failed to connect to database:", err)
 	}
@@ -172,8 +177,8 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	testcontainers.TerminateContainer(psqlC)
-	testDB.Close()
+	testcontainers.TerminateContainer(psqlC) //nolint:errcheck,gosec
+	testDB.Close()                           //nolint:errcheck,gosec
 	os.Exit(code)
 }
 
@@ -196,8 +201,8 @@ func TestSaveAndGetOrders(t *testing.T) {
 		require.NotNil(t, order)
 		require.Equal(t, testOrders[0].OrderUID, order.OrderUID)
 		require.Equal(t, testOrders[0].TrackNumber, order.TrackNumber)
-		require.Equal(t, testOrders[0].Delivery.Name, order.Delivery.Name)
-		require.Equal(t, testOrders[0].Payment.Transaction, order.Payment.Transaction)
+		require.Equal(t, testOrders[0].Name, order.Name)
+		require.Equal(t, testOrders[0].Transaction, order.Transaction)
 		require.Equal(t, testOrders[0].Items, order.Items)
 	})
 
@@ -215,7 +220,11 @@ func TestSaveAndGetOrders(t *testing.T) {
 		require.Len(t, orders, len(testOrders))
 		iExpected := len(testOrders) - 1
 		for iActual := range orders {
-			require.Equal(t, *testOrders[iExpected], *orders[iActual]) // Проверяем порядок: новые заказы первыми (DESC)
+			require.Equal(
+				t,
+				*testOrders[iExpected],
+				*orders[iActual],
+			) // Проверяем порядок: новые заказы первыми (DESC)
 			iExpected--
 		}
 	})
