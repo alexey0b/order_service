@@ -1,4 +1,4 @@
-[![Order service CI](https://github.com/alexey0b/order_service/actions/workflows/ci-cd.yaml/badge.svg?branch=main)](https://github.com/alexey0b/order_service/actions/workflows/ci-cd.yaml) 
+[![Order service CI](https://github.com/alexey0b/order_service/actions/workflows/ci.yaml/badge.svg)](https://github.com/alexey0b/order_service/actions/workflows/ci.yaml)
 
 <h1 align="center">Order Service</h1>
 
