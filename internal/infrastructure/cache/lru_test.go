@@ -1,11 +1,12 @@
 package cache_test
 
 import (
+	"testing"
+	"time"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/infrastructure/cache"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +72,7 @@ func TestSaveAndGetOrder(t *testing.T) {
 	}
 
 	t.Run("save_and_get_order", func(t *testing.T) {
-        t.Parallel()
+		t.Parallel()
 
 		lruCache := cache.NewLRUCache(cfg)
 
@@ -83,7 +84,7 @@ func TestSaveAndGetOrder(t *testing.T) {
 	})
 
 	t.Run("get_nonexistent_order", func(t *testing.T) {
-        t.Parallel()
+		t.Parallel()
 
 		lruCache := cache.NewLRUCache(cfg)
 
@@ -93,8 +94,8 @@ func TestSaveAndGetOrder(t *testing.T) {
 	})
 
 	t.Run("lru_eviction", func(t *testing.T) {
-        t.Parallel()
-        
+		t.Parallel()
+
 		lruCache := cache.NewLRUCache(cfg)
 
 		order1 := &domain.Order{OrderUID: "order1"}
@@ -123,7 +124,7 @@ func TestSaveAndGetOrder(t *testing.T) {
 	})
 
 	t.Run("ttl_expiration", func(t *testing.T) {
-        t.Parallel()
+		t.Parallel()
 
 		shortTtlCfg := &config.Config{
 			Serv: config.Server{Debug: true},
@@ -149,7 +150,7 @@ func TestSaveAndGetOrder(t *testing.T) {
 	})
 
 	t.Run("update_existing_order", func(t *testing.T) {
-        t.Parallel()
+		t.Parallel()
 
 		lruCache := cache.NewLRUCache(cfg)
 

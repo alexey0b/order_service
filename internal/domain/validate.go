@@ -8,7 +8,7 @@ func ValidateOrder(order *Order) error {
 	if order.CustomerID == "" {
 		return ErrCustomerIDRequired
 	}
-	if order.Payment.Amount <= 0 {
+	if order.Amount <= 0 {
 		return ErrInvalidPaymentAmount
 	}
 	if len(order.Items) == 0 {
@@ -17,7 +17,7 @@ func ValidateOrder(order *Order) error {
 	if order.TrackNumber == "" {
 		return ErrTrackNumberRequired
 	}
-	if order.Payment.Transaction == "" {
+	if order.Transaction == "" {
 		return ErrTransactionRequired
 	}
 

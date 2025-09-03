@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"order_service/config"
 	"order_service/internal/delivery/rest"
 	"order_service/internal/domain"
@@ -12,10 +17,6 @@ import (
 	"order_service/internal/logger"
 	"order_service/internal/request/repositoriy/postgres"
 	"order_service/internal/usecase"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -37,7 +38,7 @@ func main() {
 	if err != nil {
 		logger.ErrorLogger.Fatalln("Не удалось подключиться к базе данных:", err)
 	}
-	defer db.Close()
+	defer db.Close() //nolint:errcheck
 
 	cache := cache.NewLRUCache(cfg)
 	repo := postgres.NewRequestRepositoryPostgres(db)
@@ -72,9 +73,9 @@ func main() {
 	go func() {
 		logger.InfoLogger.Println("Starting Kafka consumer...")
 
-		ticker := time.NewTicker(time.Duration(cfg.Kafka.PollTimeout) * time.Millisecond)
+		ticker := time.NewTicker(time.Duration(cfg.PollTimeout) * time.Millisecond)
 		defer ticker.Stop()
-		defer consumer.Close()
+		defer consumer.Close() //nolint:errcheck
 
 		for {
 			select {
@@ -105,7 +106,10 @@ func main() {
 
 		logger.InfoLogger.Println("Order Service is stopping...")
 
-		timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Duration(cfg.Serv.ShutdownTimeout)*time.Second)
+		timeoutCtx, timeoutCtxCancel := context.WithTimeout(
+			ctx,
+			time.Duration(cfg.Serv.ShutdownTimeout)*time.Second,
+		)
 		defer timeoutCtxCancel()
 
 		if err := serv.Shutdown(timeoutCtx); err != nil {

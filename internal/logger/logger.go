@@ -5,8 +5,9 @@ package logger
 
 import (
 	"log"
-	"order_service/config"
 	"os"
+
+	"order_service/config"
 )
 
 var (

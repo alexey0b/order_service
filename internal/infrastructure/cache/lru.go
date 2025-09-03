@@ -1,9 +1,10 @@
 package cache
 
 import (
+	"time"
+
 	"order_service/config"
 	"order_service/internal/domain"
-	"time"
 
 	"github.com/hashicorp/golang-lru/v2/expirable"
 )
@@ -16,11 +17,11 @@ type LRUCache struct {
 func NewLRUCache(cfg *config.Config) *LRUCache {
 	var ttl time.Duration
 	if cfg.Serv.Debug {
-		ttl = time.Second * time.Duration(cfg.Cache.Ttl) // Debug: TTL in seconds
+		ttl = time.Second * time.Duration(cfg.Ttl) // Debug: TTL in seconds
 	} else {
-		ttl = time.Hour * time.Duration(cfg.Cache.Ttl) // Production: TTL in hours
+		ttl = time.Hour * time.Duration(cfg.Ttl) // Production: TTL in hours
 	}
-	cache := expirable.NewLRU[string, *domain.Order](cfg.Cache.Capacity, nil, ttl)
+	cache := expirable.NewLRU[string, *domain.Order](cfg.Capacity, nil, ttl)
 	return &LRUCache{cache: cache}
 }
 

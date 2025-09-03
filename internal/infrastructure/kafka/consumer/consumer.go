@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
@@ -21,9 +22,9 @@ func NewConsumer(cfg *config.Config) *Consumer {
 	logger.DebugLogger.Println("Initializing Kafka Consumer")
 	return &Consumer{
 		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers: cfg.Kafka.Brokers,
-			Topic:   cfg.Kafka.Topic,
-			GroupID: cfg.Kafka.GroupID,
+			Brokers: cfg.Brokers,
+			Topic:   cfg.Topic,
+			GroupID: cfg.GroupID,
 		}),
 	}
 }
@@ -38,7 +39,12 @@ func (c *Consumer) ReadMessage(ctx context.Context) (*domain.Order, error) {
 		return nil, fmt.Errorf("failed to receive message: %w", err)
 	}
 
-	logger.InfoLogger.Printf("Message at topic/partition/offset %v/%v/%v", msg.Topic, msg.Partition, msg.Offset)
+	logger.InfoLogger.Printf(
+		"Message at topic/partition/offset %v/%v/%v",
+		msg.Topic,
+		msg.Partition,
+		msg.Offset,
+	)
 
 	data := msg.Value
 	order := domain.Order{}

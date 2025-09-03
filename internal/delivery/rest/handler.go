@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
+
 	"order_service/internal/domain"
 	"order_service/internal/logger"
-	"time"
 )
 
 type Handler struct {
@@ -38,16 +39,16 @@ func (h *Handler) GetOrders() func(http.ResponseWriter, *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			if errors.Is(err, domain.ErrOrderNotFound) {
 				w.WriteHeader(http.StatusNotFound)
-				json.NewEncoder(w).Encode(ErrorResponse{Error: domain.ErrOrderNotFound.Error()})
+				json.NewEncoder(w).Encode(ErrorResponse{Error: domain.ErrOrderNotFound.Error()}) //nolint:errcheck,gosec
 			} else {
 				logger.ErrorLogger.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
-				json.NewEncoder(w).Encode(ErrorResponse{Error: domain.ErrInternalServer.Error()})
+				json.NewEncoder(w).Encode(ErrorResponse{Error: domain.ErrInternalServer.Error()}) //nolint:errcheck,gosec
 			}
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(OrderResponse{Order: order})
+		json.NewEncoder(w).Encode(OrderResponse{Order: order}) //nolint:errcheck,gosec
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"order_service/internal/domain"
 	"order_service/internal/logger"
 
@@ -171,26 +172,58 @@ func (r *RequestRepositoryPostgres) SaveOrder(ctx context.Context, order *domain
 	}()
 
 	// Вставляем строку в orders
-	_, err = tx.ExecContext(ctx, insertRowIntoOrders,
-		order.OrderUID, order.TrackNumber, order.Entry, order.Locale, order.InternalSignature,
-		order.CustomerID, order.DeliveryService, order.ShardKey, order.SmID, order.DateCreated, order.OofShard)
+	_, err = tx.ExecContext(
+		ctx,
+		insertRowIntoOrders,
+		order.OrderUID,
+		order.TrackNumber,
+		order.Entry,
+		order.Locale,
+		order.InternalSignature,
+		order.CustomerID,
+		order.DeliveryService,
+		order.ShardKey,
+		order.SmID,
+		order.DateCreated,
+		order.OofShard,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to insert row into orders: %w", err)
 	}
 
 	// Вставляем строку в delivery
-	_, err = tx.ExecContext(ctx, insertRowIntoDelivery,
-		order.OrderUID, order.Delivery.Name, order.Delivery.Phone, order.Delivery.Zip, order.Delivery.City,
-		order.Delivery.Address, order.Delivery.Region, order.Delivery.Email)
+	_, err = tx.ExecContext(
+		ctx,
+		insertRowIntoDelivery,
+		order.OrderUID,
+		order.Name,
+		order.Phone,
+		order.Zip,
+		order.City,
+		order.Address,
+		order.Region,
+		order.Email,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to insert row into delivery: %w", err)
 	}
 
 	// Вставляем строку в payment
-	_, err = tx.ExecContext(ctx, insertRowIntoPayment,
-		order.OrderUID, order.Payment.Transaction, order.Payment.RequestID, order.Payment.Currency, order.Payment.Provider,
-		order.Payment.Amount, order.Payment.PaymentDt, order.Payment.Bank, order.Payment.DeliveryCost,
-		order.Payment.GoodsTotal, order.Payment.CustomFee)
+	_, err = tx.ExecContext(
+		ctx,
+		insertRowIntoPayment,
+		order.OrderUID,
+		order.Transaction,
+		order.RequestID,
+		order.Currency,
+		order.Provider,
+		order.Amount,
+		order.PaymentDt,
+		order.Bank,
+		order.DeliveryCost,
+		order.GoodsTotal,
+		order.CustomFee,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to insert row into payment: %w", err)
 	}

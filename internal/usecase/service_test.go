@@ -3,12 +3,13 @@ package usecase_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
 	"order_service/internal/mock"
 	"order_service/internal/usecase"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -181,7 +182,7 @@ func TestSaveOrder(t *testing.T) {
 }
 
 func TestRestoreOrder(t *testing.T) {
-	cfg.Cache.Capacity = 1
+	cfg.Capacity = 1
 	logger.InitLogger(cfg)
 
 	for i, testCase := range tblForRestoreOrder {

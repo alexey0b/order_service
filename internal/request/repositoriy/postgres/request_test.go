@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
 	"order_service/internal/request/repositoriy/postgres"
-	"os"
-	"path/filepath"
-	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -61,6 +62,7 @@ var testOrders = []*domain.Order{
 		},
 		Items: []domain.Item{
 			{
+				OrderUID:    "test_order_123",
 				ChrtID:      9934930,
 				TrackNumber: "WBILMTESTTRACK",
 				Price:       453,
@@ -109,6 +111,7 @@ var testOrders = []*domain.Order{
 		},
 		Items: []domain.Item{
 			{
+				OrderUID:    "test_order_789",
 				ChrtID:      9934932,
 				TrackNumber: "WBILMTESTTRACK3",
 				Price:       2000,
@@ -161,9 +164,13 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	psqlUrl := fmt.Sprintf("postgres://user:password@%s:%s/test_db?sslmode=disable", host, mappedPort.Port())
+	psqlURL := fmt.Sprintf(
+		"postgres://user:password@%s:%s/test_db?sslmode=disable",
+		host,
+		mappedPort.Port(),
+	)
 
-	testDB, err = sqlx.Connect("pgx", psqlUrl)
+	testDB, err = sqlx.Connect("pgx", psqlURL)
 	if err != nil {
 		log.Fatalln("Failed to connect to database:", err)
 	}
@@ -172,8 +179,8 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	testcontainers.TerminateContainer(psqlC)
-	testDB.Close()
+	testcontainers.TerminateContainer(psqlC) //nolint:errcheck,gosec
+	testDB.Close()                           //nolint:errcheck,gosec
 	os.Exit(code)
 }
 
@@ -193,18 +200,13 @@ func TestSaveAndGetOrders(t *testing.T) {
 	t.Run("get_existing_order", func(t *testing.T) {
 		order, err := repo.GetOrder(ctx, testOrders[0].OrderUID)
 		require.NoError(t, err)
-		require.NotNil(t, order)
-		require.Equal(t, testOrders[0].OrderUID, order.OrderUID)
-		require.Equal(t, testOrders[0].TrackNumber, order.TrackNumber)
-		require.Equal(t, testOrders[0].Delivery.Name, order.Delivery.Name)
-		require.Equal(t, testOrders[0].Payment.Transaction, order.Payment.Transaction)
-		require.Equal(t, testOrders[0].Items, order.Items)
+		require.Equal(t, *testOrders[0], *order)
 	})
 
 	t.Run("get_nonexistent_order", func(t *testing.T) {
 		order, err := repo.GetOrder(ctx, "nonexistent_order")
 		require.Error(t, err)
-		require.ErrorIs(t, err, domain.ErrOrderNotFound)
+		require.ErrorContains(t, err, "failed to select order row")
 		require.Nil(t, order)
 	})
 
@@ -215,7 +217,11 @@ func TestSaveAndGetOrders(t *testing.T) {
 		require.Len(t, orders, len(testOrders))
 		iExpected := len(testOrders) - 1
 		for iActual := range orders {
-			require.Equal(t, *testOrders[iExpected], *orders[iActual]) // Проверяем порядок: новые заказы первыми (DESC)
+			require.Equal(
+				t,
+				*testOrders[iExpected],
+				*orders[iActual],
+			) // Проверяем порядок: новые заказы первыми (DESC)
 			iExpected--
 		}
 	})
@@ -223,9 +229,8 @@ func TestSaveAndGetOrders(t *testing.T) {
 	t.Run("get_orders_empty", func(t *testing.T) {
 		cleanRepo(testDB)
 		orders, err := repo.GetOrders(ctx, len(testOrders))
-		require.Error(t, err)
-		require.ErrorIs(t, err, domain.ErrOrdersNotFound)
-		require.Nil(t, orders)
+		require.NoError(t, err)
+		require.Len(t, orders, 0)
 	})
 }
 

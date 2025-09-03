@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+
 	"order_service/config"
 	"order_service/internal/domain"
 	"order_service/internal/logger"
@@ -70,7 +71,7 @@ func (s *OrderRequestService) SaveOrder(ctx context.Context, order *domain.Order
 func (s *OrderRequestService) RestoreCache(ctx context.Context, cfg *config.Config) error {
 	logger.InfoLogger.Println("Restoring cache...")
 
-	cap := cfg.Cache.Capacity
+	cap := cfg.Capacity
 	orders, err := s.repo.GetOrders(ctx, cap)
 	if err != nil {
 		return fmt.Errorf("failed to get orders: %w", err)

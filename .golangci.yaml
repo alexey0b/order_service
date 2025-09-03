@@ -1,0 +1,48 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - govet # анализ кода (встроен в Go)
+    - staticcheck # статический анализ
+    - unused # неиспользуемый код
+    - errcheck # специализированный линтер для проверки обработки ошибок
+    - revive # альтернатива golint
+    - ineffassign # находит неэффективные присваивания
+    - dupl # детектор дублирующегося кода
+    - gocritic # анализатор стиля кода и сложных конструкций
+    - unconvert # находит избыточные конвертации типов
+    - gosec # анализатор безопасности кода
+
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+
+formatters:
+  # enable specific formatter.
+  # default: [] (uses standard Go formatting)
+  enable:
+    - gofmt # базовое форматирование
+    - goimports # управление импортами
+    - swaggo # форматирование swagger комментариев
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 10
+
+severity:
+  default: error # строгий режим
+
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      colors: true

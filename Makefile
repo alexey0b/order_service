@@ -110,6 +110,9 @@ unit-test-start:
 	@echo "Запуск тестов для handlers:"
 	@go test -v ./internal/delivery/rest/handler_test.go
 
+	@echo "Запуск тестов для httpMetrics:"
+	@go test -v ./internal/infrastructure/monitoring/http_metrics_test.go
+
 	@echo "Запуск тестов для services:"
 	@go test -v ./internal/usecase/service_test.go
 
@@ -120,6 +123,9 @@ integration-test-start:
 	@echo "Запуск тестов для Postgres:"
 	@go test -v ./internal/request/repositoriy/postgres/request_test.go
 
+lint:
+	@golangci-lint run
+	
 help:
 	@echo "Available commands:"
 	@echo ""
@@ -153,7 +159,10 @@ help:
 	@echo "  broker-send-msgs             - Send test messages"
 	@echo ""
 	@echo "For Tests:"
-	@echo "  unit-test-start              - Run unit tests (handlers, services, cache)"
+	@echo "  unit-test-start              - Run unit tests (handlers, httpMetrics, services, cache)"
 	@echo "  integration-test-start       - Run integration tests (postgres repository)"
+	@echo ""
+	@echo "For Code Quality:"
+	@echo "  lint                         - Run golangci-lint with .golangci.yml config"
 
-.PHONY: help app-start app-stop postgres-start postgres-stop broker-start broker-stop service-start service-stop install-goose new-migration migrate-up migrate-down migrate-reset migrate-status postgres-create-user postgres-grant-permissions broker-create-topic broker-list-topics broker-send-msgs unit-test-start integration-test-start
+.PHONY: help app-start app-stop postgres-start postgres-stop broker-start broker-stop promo-start promo-stop service-start service-stop install-goose new-migration migrate-up migrate-down migrate-reset migrate-status postgres-create-user postgres-grant-permissions broker-create-topic broker-list-topics broker-send-msgs unit-test-start integration-test-start lint
